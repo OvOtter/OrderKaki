@@ -54,6 +54,6 @@ OrderKaki is a platform where users can create, view, and manage group food deli
 ### 2. Clone the Repository
 
 ```bash
-git clone <repository_url>
+git clone [<repository_url>](https://github.com/OvOtter/OrderKaki)
 cd OrderKaki
 ```
