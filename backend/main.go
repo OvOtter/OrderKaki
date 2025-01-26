@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/OVOtter/orderkaki-backend/database"
-	"github.com/OVOtter/orderkaki-backend/models"
+	"github.com/OVOtter/orderkaki-backend/middleware"
 	"github.com/OVOtter/orderkaki-backend/routes"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -13,27 +11,24 @@ import (
 func main() {
 	r := gin.Default()
 
-	// Enable CORS middleware
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"}, // React app's origin
+		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		AllowCredentials: true,
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		AllowCredentials: true, // If you need cookies or auth headers
 	}))
 
-	// Connect to the database
+	// Database connection
 	database.Connect()
 
-	// Auto-migrate the database
-	database.DB.AutoMigrate(&models.Post{})
+	// Public routes (no authentication required)
+	routes.RegisterUserRoutes(r) // Registers /login and /signup
 
-	// Register routes
-	routes.RegisterPostRoutes(r)
-	routes.RegisterUserRoutes(r)
+	// Protected routes (authentication required)
+	protected := r.Group("/")
+	protected.Use(middleware.AuthMiddleware())
 
-	for _, route := range r.Routes() {
-		fmt.Printf("Registered route: %s %s\n", route.Method, route.Path)
-	}
+	routes.RegisterPostRoutes(protected) // Registers routes under /posts
 
 	// Start the server
 	r.Run(":8000")

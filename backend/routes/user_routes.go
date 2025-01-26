@@ -51,4 +51,42 @@ func RegisterUserRoutes(r *gin.Engine) {
 
 		c.JSON(http.StatusOK, gin.H{"token": tokenString})
 	})
+
+	// Signup route
+	r.POST("/signup", func(c *gin.Context) {
+		var input struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+			return
+		}
+
+		// Check if username already exists
+		var existingUser models.User
+		if err := database.DB.Where("username = ?", input.Username).First(&existingUser).Error; err == nil {
+			c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
+			return
+		}
+
+		// Hash the password
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+			return
+		}
+
+		// Create a new user
+		user := models.User{
+			Username: input.Username,
+			Password: string(hashedPassword),
+		}
+		if err := database.DB.Create(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
+	})
 }

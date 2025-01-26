@@ -8,11 +8,11 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var jwtSecret = []byte("your-secret-key") // Same secret key used for generating JWTs
+var jwtSecret = []byte("your-secret-key") // Replace with your actual secret
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get the token from the Authorization header
+		// Extract the token from the Authorization header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
@@ -20,10 +20,10 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Extract the token (assuming format: "Bearer <token>")
+		// Expect "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
 			c.Abort()
 			return
 		}
@@ -32,26 +32,35 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		// Parse and validate the token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Ensure the token uses the correct signing method
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, jwt.ErrInvalidKey
+				return nil, jwt.ErrSignatureInvalid
 			}
 			return jwtSecret, nil
 		})
+
 		if err != nil || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
 
-		// Extract claims and attach them to the context
+		// Extract the user_id from the token claims
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			c.Set("user_id", claims["user_id"]) // Save user_id for later use
+			if userID, ok := claims["user_id"].(float64); ok { // JWT numbers are float64
+				c.Set("user_id", uint(userID)) // Store user_id in the context
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user_id in token"})
+				c.Abort()
+				return
+			}
 		} else {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
 			c.Abort()
 			return
 		}
 
+		// Proceed to the next middleware/handler
 		c.Next()
 	}
 }
