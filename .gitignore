@@ -1,0 +1,17 @@
+# Node.js (Frontend)
+node_modules/
+build/
+.env
+
+# Go (Backend)
+vendor/
+.env
+*.exe
+*.out
+*.log
+
+# General
+.idea/
+.vscode/
+.DS_Store
+*.swp
