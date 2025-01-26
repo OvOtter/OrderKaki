@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
@@ -14,7 +15,7 @@ func main() {
 	port := 8080
 	user := "postgres"
 	password := "319319319" // Replace with your PostgreSQL password
-	dbname := "orderkaki"   // Connect to the default `postgres` database initially
+	dbname := "postgres"    // Connect to the default `postgres` database initially
 
 	// Connection string to connect to the default database
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
@@ -52,18 +53,17 @@ func main() {
 	}
 	defer db.Close()
 
-	// Create the `posts` table
-	createPostsTable := `
-	CREATE TABLE IF NOT EXISTS posts (
-		id SERIAL PRIMARY KEY,
-		title VARCHAR(255) NOT NULL,
-		description TEXT,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	);`
-	_, err = db.Exec(createPostsTable)
+	// Read SQL file
+	file, err := os.ReadFile("./migrations/001_create_tables.sql")
 	if err != nil {
-		log.Fatalf("Failed to create `posts` table: %v", err)
-	} else {
-		fmt.Println("Table `posts` created successfully!")
+		log.Fatalf("Failed to read SQL file: %v", err)
 	}
+
+	// Execute SQL commands
+	_, err = db.Exec(string(file))
+	if err != nil {
+		log.Fatalf("Failed to execute SQL script: %v", err)
+	}
+
+	fmt.Println("Database schema initialized successfully!")
 }

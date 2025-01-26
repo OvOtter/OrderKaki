@@ -1,9 +1,17 @@
 import axios from "axios";
 
-const API = axios.create({ baseURL: "http://localhost:8000" });
+// Create an Axios instance
+const API = axios.create({
+    baseURL: "http://localhost:8000", // Replace with your backend URL
+});
 
-export const fetchPosts = async () => {
-    const response = await API.get("/posts");
-    console.log(response);
-    return response.data.data;
-};
+// Add a request interceptor to include the JWT token in every request
+API.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token"); // Get JWT token from localStorage
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+export default API;

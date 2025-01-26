@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { fetchPosts } from "../services/api";
+import { fetchPosts } from "../../services/post";
 
-const PostsList: React.FC = () => {
+const PostList: React.FC = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -10,25 +10,24 @@ const PostsList: React.FC = () => {
       try {
         const data = await fetchPosts();
         setPosts(data);
-      } catch (err) {
-        setError("Failed to fetch posts");
+      } catch (err: any) {
+        setError(err.message);
       }
     };
 
     getPosts();
   }, []);
 
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div>
-      <h1>Posts</h1>
+      <h2>Posts</h2>
       <ul>
         {posts.map((post) => (
           <li key={post.id}>
             <h3>{post.title}</h3>
             <p>{post.description}</p>
-            <small>{new Date(post.created_at).toLocaleString()}</small>
           </li>
         ))}
       </ul>
@@ -36,4 +35,4 @@ const PostsList: React.FC = () => {
   );
 };
 
-export default PostsList;
+export default PostList;

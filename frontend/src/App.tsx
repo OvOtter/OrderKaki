@@ -1,11 +1,26 @@
 import React from "react";
-import PostsList from "./components/PostsList";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Login from "./components/Auth/Login";
+import PostList from "./components/Post/PostsList";
 
 const App: React.FC = () => {
+  const isLoggedIn = !!localStorage.getItem("token");
+
   return (
-    <div>
-      <PostsList />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/posts"
+          element={isLoggedIn ? <PostList /> : <Navigate to="/login" />}
+        />
+      </Routes>
+    </Router>
   );
 };
 

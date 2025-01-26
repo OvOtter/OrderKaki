@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/OVOtter/orderkaki-backend/database"
 	"github.com/OVOtter/orderkaki-backend/models"
 	"github.com/OVOtter/orderkaki-backend/routes"
@@ -27,6 +29,11 @@ func main() {
 
 	// Register routes
 	routes.RegisterPostRoutes(r)
+	routes.RegisterUserRoutes(r)
+
+	for _, route := range r.Routes() {
+		fmt.Printf("Registered route: %s %s\n", route.Method, route.Path)
+	}
 
 	// Start the server
 	r.Run(":8000")
