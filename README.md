@@ -57,3 +57,18 @@ OrderKaki is a platform where users can create, view, and manage group food deli
 git clone https://github.com/OvOtter/OrderKaki
 cd OrderKaki
 ```
+### 3. Setup the database
+Note: Please change the path in line 11 of /backend/database/db.go based on your PostgreSQL setup.
+```bash
+cd backend
+go run init_db.go
+```
+### 4. Run the backend
+```bash
+go run main.go
+```
+### 5. Run the frontend
+```bash
+cd ../frontend
+npm start
+```
